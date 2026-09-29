@@ -7,17 +7,110 @@ import random
 
 
 class Planet:
-    def __init__(self, name, survival_chance, rewards):
+    def __init__(self, name, survival_chance, exp_gain, metals):
         self.name = name
         self.survival_chance = survival_chance
-        self.rewards = rewards
+        self.exp_gain = exp_gain
+        self.metals = metals
 
 
-def generate_planets(exp):
+class Ship:
+    def __init__(self, exp, metals, speed, shield, extraction):
+        self.exp = exp
+        self.speed = speed
+        self.shield = shield
+        self.extraction = extraction
+        self.metals = metals
+
+    def upgrading_ship(self):
+
+        while True:
+            current_level = self.exp // 100
+            speed_upgrade_cost = int(2**self.speed)
+            shield_upgrade_cost = int(2**(self.shield / 10))
+            extraction_upgrade_cost = int(2**self.extraction)
+
+            print(f"\nCurrent level is {current_level}")
+            print(
+                f"Your ships thrusters are level {self.speed}, next level costs {speed_upgrade_cost} metal")
+            print(
+                f"Your current shields have a capacity of {self.shield}, next level costs {shield_upgrade_cost} metal")
+            print(
+                f"Your current mining tech is level {self.extraction}, next level costs {extraction_upgrade_cost} metal")
+
+            upgrading = input(
+                f"\n You have {self.metals} metals, what do you want to upgrade? (thrusters, shields, mining)"
+                f"\n or type exit if you want to get back to exploring: "
+            ).lower()
+
+            if upgrading == 'exit':
+                break
+
+            elif upgrading == 'thrusters':
+                if self.metals >= speed_upgrade_cost:
+                    self.speed += 1
+                    self.metals -= speed_upgrade_cost
+                    print(f"Upgraded thrusters to level {self.speed}!")
+                else:
+                    print("You dont have enough metals, go do something else!")
+
+            elif upgrading == 'shields':
+                if self.metals >= shield_upgrade_cost:
+                    self.shield += 10
+                    self.metals -= shield_upgrade_cost
+                    print(f"Upgraded shields to capacity {self.shield}!")
+                else:
+                    print("You dont have enough metals, go do something else!")
+
+            elif upgrading == 'mining':
+                if self.metals >= extraction_upgrade_cost:
+                    self.extraction += 1
+                    self.metals -= extraction_upgrade_cost
+                    print(f"Upgraded mining tech to level {self.extraction}!")
+                else:
+                    print("You dont have enough metals, go do something else!")
+
+            else:
+                print(
+                    "Invalid choice, please select thrusters, shields, mining, or exit.")
+
+        return self
+
+
+def initial_explanation(ship):
+
+    print("==================================================")
+
+    print("Hi there, the point of this game is to travel from planet to planet")
+    print("gathering resources, and leveling up to upgrade your starship.")
+    print("Survive for as long as you can and to try and get a new highscore! ")
+    print("The deeper into space you venture, the tougher the galaxy gets!\n")
+
+    print("--- SHIP UPGRADE OVERVIEW ---")
+    print(f"• OVERALL LEVEL [{ship.exp // 100}]: Overall ship progress. ")
+    print(" No individual system can be upgraded higher than your current Level.\n")
+
+    print(
+        f"• THRUSTERS [Level {ship.speed}]: Increases speed. Higher speed reduces travel")
+    print("  time and gives you a better chance to flee from dangerous encounters.\n")
+
+    print(
+        f"• SHIELDS [Level {ship.shield}]: Increases defense. Stronger shields ")
+    print(" boost your survival chance on hostile planets.\n")
+
+    print(
+        f"• EXTRACTION [Level {ship.extraction}]: Enhances mining tech. Boosts the amount")
+    print(" of bonus resources and rewards harvested from every successful mission.")
+
+    print("==================================================\n")
+
+
+def generate_planets(ship):
     PREFIXES = ["K2", "KMT", "TOI", "WASP", "Kepler"]
     DESIGNATIONS = ["Prime", "Major", "Minor", "Alpha", "Beta", "Gamma"]
 
     planets = []
+    print("==================================================")
     for i in range(0, 3):
         prefix = random.choice(PREFIXES)
         number = random.randint(1, 1000)
@@ -25,12 +118,15 @@ def generate_planets(exp):
         name = f"{prefix}-{number} {designation}"
 
         survival_chance = random.randint(10, 100)
-        rewards = (exp//100) * (100-survival_chance) * random.randint(1, 10)
+        exp_gain = (10 + (ship.exp//100)) * (100-survival_chance) * \
+            random.randint(1, 10) / 20
+        metals = (ship.extraction * survival_chance *
+                  random.randint(1, 10)) / 100
 
-        planets.append(Planet(name, survival_chance, rewards))
+        planets.append(Planet(name, survival_chance, exp_gain, metals))
 
         print(
-            f"Planet {i+1}: {name} (Survival Chance: {survival_chance} %, Rewards: {rewards})")
+            f"Planet {i+1}: {name} (Survival Chance: {survival_chance} %, Experienced_gained: {exp_gain}, Metals_gained {metals})")
 
     choice = int(
         input("Which planet do you want to visit? (Enter number 1-3): "))
@@ -44,32 +140,41 @@ def generate_planets(exp):
         return planets[0]
 
 
-def planet_interaction(exp, chosen_planet):
+def planet_interaction(ship, chosen_planet):
+
     if random.randint(0, 100) > chosen_planet.survival_chance:
         print("You unfortunately failed, your ship has exploded! ")
-        # Want to say how many planets were explored and the final score (rewards)
-        print(f"You made it to level {exp//100}. ")
+        print(f"You made it to level {ship.exp//100}. ")
         game = False
+
     elif chosen_planet.survival_chance / 2 < random.randint(0, 100) < chosen_planet.survival_chance:
-        print("You just about survived the mission... ")
-        print(f"You received {chosen_planet.rewards} rewards. ")
-        exp += chosen_planet.rewards
-        game = True
-    else:
-        bonus = random.uniform(0, 0.3)
+        print("You survived the mission :) ")
         print(
-            f"This mission went perfect :) so you received {chosen_planet.rewards} rewards")
-        print(
-            f"You had time for some extra jobs to get an additional {chosen_planet.rewards * bonus :.1f} rewards: ")
-        exp += (1 + bonus) * chosen_planet.rewards
+            f"You received {chosen_planet.exp_gain} experience and {chosen_planet.metals} metals. ")
+        ship.exp += chosen_planet.exp_gain
+        ship.metals += chosen_planet.metals
         game = True
 
-    return exp, game
+    else:
+        bonus = random.uniform(0, 0.5)
+        print(
+            f"This mission went amazigly :) so you received {chosen_planet.exp_gain} experience and {chosen_planet.metals} metals")
+        print(
+            f"You had time for some extra work to get an additional {bonus:.1f}% rewards: ")
+
+        ship.exp += (1 + bonus) * chosen_planet.exp_gain
+        ship.metals += (1 + bonus) * chosen_planet.metals
+        game = True
+
+    return game
 
 
 if __name__ == "__main__":
-    exp = 100
+    my_ship = Ship(exp=100, metals=0, speed=1, shield=10, extraction=1)
+    initial_explanation(my_ship)
     game = True
     while game == True:
-        chosen_planet = generate_planets(exp)
-        exp, game = planet_interaction(exp, chosen_planet)
+        chosen_planet = generate_planets(my_ship)
+        game = planet_interaction(my_ship, chosen_planet)
+        if game == True:
+            my_ship.upgrading_ship()
