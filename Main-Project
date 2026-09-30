@@ -22,6 +22,12 @@ class Ship:
 
     def upgrading_ship(self):
 
+        RED = "\033[91m"
+        GREEN = "\033[92m"
+        BLUE = "\033[94m"
+        BOLD = "\033[1m"
+        RESET = "\033[0m"
+
         while True:
             time.sleep(1)
             current_level = self.exp // 100
@@ -29,17 +35,17 @@ class Ship:
             shield_upgrade_cost = int(2**(self.shield / 10))
             extraction_upgrade_cost = int(2**self.extraction)
 
-            print(f"\nCurrent level is {current_level}")
+            print(f"\nCurrent level is {GREEN}{current_level}{RESET}")
             print(
-                f"Your ships thrusters are level {self.speed}, next level costs {speed_upgrade_cost} metal")
+                f"Your ships thrusters are level {BLUE}{self.speed}{RESET}, next level costs {speed_upgrade_cost} metal")
             print(
-                f"Your current shields have a capacity of {self.shield}, next level costs {shield_upgrade_cost} metal")
+                f"Your current shields have a capacity of {BLUE}{self.shield}{RESET}, next level costs {shield_upgrade_cost} metal")
             print(
-                f"Your current mining tech is level {self.extraction}, next level costs {extraction_upgrade_cost} metal")
+                f"Your current mining tech is level {BLUE}{self.extraction}{RESET}, next level costs {extraction_upgrade_cost} metal")
 
             upgrading = input(
-                f"\n You have {self.metals:.1f} metals, what do you want to upgrade? (thrusters, shields, mining)"
-                f"\n or type exit if you want to get back to exploring: "
+                f"\n You have {self.metals:.1f} metals, what do you want to upgrade? {BOLD} (thrusters, shields, mining) {RESET}"
+                f"\n or type {BOLD}exit{RESET} if you want to get back to exploring: "
             ).lower()
 
             if upgrading == 'exit':
@@ -71,47 +77,62 @@ class Ship:
 
             else:
                 print(
-                    "Invalid choice, please select thrusters, shields, mining, or exit.")
+                    f"{RED}Invalid choice, please select thrusters, shields, mining, or exit. {RED}")
 
         return self
 
 
 def initial_explanation(ship):
 
-    print("==================================================")
+    CYAN = "\033[96m"
+    YELLOW = "\033[93m"
+    GREEN = "\033[92m"
+    BLUE = "\033[94m"
+    MAGENTA = "\033[95m"
+    BOLD = "\033[1m"
+    RESET = "\033[0m"
 
-    print("Hi there, the point of this game is to travel from planet to planet")
-    print("gathering resources, and leveling up to upgrade your starship.")
-    print("Survive for as long as you can and to try and get a new highscore! ")
-    print("The deeper into space you venture, the tougher the galaxy gets!\n")
+    print(f"{CYAN}==========================================================================={RESET}")
 
-    print("--- SHIP UPGRADE OVERVIEW ---")
-    print(f"• OVERALL LEVEL [{ship.exp // 100}]: Overall ship progress. ")
-    print(" No individual system can be upgraded higher than your current Level.\n")
+    print(f"  Hi there, the point of this game is to travel from planet to planet")
+    print(f"  gathering resources, and leveling up to upgrade your starship.")
+    print(f"  Survive for as long as you can and to try and get a new highscore!")
+    print(f"  The deeper into space you venture, the tougher the galaxy gets!")
+    print(f"{CYAN}==========================================================================={RESET}")
+    print(
+        f"  \n {BOLD}{MAGENTA}----------------- SHIP UPGRADE OVERVIEW -----------------{RESET}\n")
 
     print(
-        f"• THRUSTERS [Level {ship.speed}]: Increases speed. Higher speed ")
-    print(" gives you a better chance to flee from dangerous encounters.\n")
+        f"  {BOLD}• OVERALL LEVEL [{GREEN}{ship.exp // 100}{RESET}{BOLD}]:{RESET} Overall ship progress.")
+    print(f"    No individual system can be upgraded higher than your current Level.\n")
 
     print(
-        f"• SHIELDS [Level {ship.shield}]: Increases defense. Stronger shields ")
-    print(" boost your survival chance on hostile planets.\n")
+        f"  {BOLD}• THRUSTERS [Level {BLUE}{ship.speed}{RESET}{BOLD}]:{RESET} Increases speed. Higher speed")
+    print(f"    gives you a better chance to flee from dangerous encounters.\n")
 
     print(
-        f"• EXTRACTION [Level {ship.extraction}]: Enhances mining tech. Boosts the amount")
-    print(" of bonus resources and rewards harvested from every successful mission.")
+        f"  {BOLD}• SHIELDS [Capacity {BLUE}{ship.shield}{RESET}{BOLD}]:{RESET} Increases defense. Stronger shields")
+    print(f"    boost your survival chance on hostile planets.\n")
 
-    print("==================================================\n")
+    print(
+        f"  {BOLD}• EXTRACTION [Level {BLUE}{ship.extraction}{RESET}{BOLD}]:{RESET} Enhances mining tech. Boosts the amount")
+    print(f"    of bonus resources and rewards harvested from every successful mission.\n")
 
-    print("Finally look out for any secret co-ordinates that may lead us back to Earth !!!")
+    print(f"  {YELLOW}★ Finally look out for any secret co-ordinates that may lead us back to Earth !!!{RESET}")
+    print(f"{CYAN}==========================================================================={RESET}\n")
 
 
-def generate_planets(ship, secret_coords, found_coords):
+def generate_planets(ship, secret_coords, found_coords, trips):
+
+    YELLOW = "\033[93m"
+    BOLD = "\033[1m"
+    RESET = "\033[0m"
+
     PREFIXES = ["K2", "KMT", "TOI", "WASP", "Kepler"]
     DESIGNATIONS = ["Prime", "Major", "Minor", "Alpha", "Beta", "Gamma"]
 
     planets = []
-    print("==================================================")
+
     for i in range(0, 3):
         level = ship.exp // 100
 
@@ -120,30 +141,32 @@ def generate_planets(ship, secret_coords, found_coords):
         designation = random.choice(DESIGNATIONS)
         name = f"{prefix}-{number} {designation}"
 
-        min_chance = max(0, 90 - (level * 5))
-        max_chance = max(50, 90 - (level * 3))
+        min_chance = max(0, 98 - (trips * 8))
+        max_chance = max(50, 97 - (trips * 2))
         base_survival = random.uniform(min_chance, max_chance)
-        survival_chance = base_survival + (5 * (ship.shield//10))
+        shield_bonus = (ship.shield // 10) * 5
+        survival_chance = min(100, base_survival + shield_bonus)
 
         boost = random.randint(1, 10)
-        exp_gain = ((10 + level) * (120-survival_chance) * boost) / 20
+        exp_gain = (10) * ((120-survival_chance) * boost) / 20
         metals = (level + 5) * (ship.extraction) * \
             (survival_chance/100) * (10 - (boost/2)) / 20
 
-        # Assign next missing coordinate piece if secret is triggered
-        if boost <= 1.5 and len(found_coords) < len(secret_coords):
+        if boost <= 1.3 and len(found_coords) < len(secret_coords):
             secret = secret_coords[len(found_coords)]
         else:
             secret = None
 
         planets.append(Planet(name, survival_chance, exp_gain, metals, secret))
 
-        secret_text = " [SECRET SIGNAL DETECTED!]" if secret else ""
+        secret_text = f" {YELLOW} [SECRET SIGNAL DETECTED!] {RESET}" if secret else ""
+
         print(
-            f"Planet {i+1}: {name} (Survival Chance: {survival_chance:.1f} %, Experienced_gained: {exp_gain:.1f}, Metals_gained {metals:.1f}){secret_text}")
+            f"Planet {i+1}: {name} (Survival Chance: {base_survival:.1f} + \033[94m{shield_bonus:.1f}% \033[0m, Experienced: {exp_gain:.1f}, Metals {metals:.1f}){secret_text}"
+        )
 
     choice = int(
-        input("Which planet do you want to visit? (Enter number 1-3): "))
+        input(f"\n Which planet do you want to visit? {BOLD}(Enter number 1-3):{BOLD} "))
     chosen_planet = planets[choice - 1]
 
     if chosen_planet:
@@ -154,29 +177,37 @@ def generate_planets(ship, secret_coords, found_coords):
         return planets[0]
 
 
-def planet_interaction(ship, chosen_planet, secret_coords, found_coords):
+def planet_interaction(ship, chosen_planet, found_coords, trips):
+
+    YELLOW = "\033[93m"
+    GREEN = "\033[92m"
+    RED = "\033[91m"
+    BOLD = "\033[1m"
+    RESET = "\033[0m"
 
     time.sleep(2)
     level = ship.exp // 100
     if random.randint(0, 100) > chosen_planet.survival_chance:
         chance = 5 * ship.speed
-        print("\nThe mission has went wrong, your ship is about to explode! ")
         print(
-            f"You try to escape using your level {ship.speed} thrusters which has a {chance}% of working: ")
+            f"\n{RED}The mission has went wrong, your ship is about to explode! {RESET}")
+        print(
+            f"{BOLD}You try to escape using your level {ship.speed} thrusters which has a {chance}% of working: {RESET}")
         time.sleep(2)
         if random.randint(0, 100) > chance:
-            print("The escape failed :( GAME OVER")
+            print(f"\n {BOLD} The escape failed :( GAME OVER {RESET}")
             print("============================================")
-            print(f"You made it to level {level:.1f}. ")
+            print(
+                f"You made it to level {level:.1f} and visited {trips} different planets. ")
             game = False
         else:
-            print("You were lucky to escape this time... ")
+            print("{GREEN} You were lucky to escape this time...{RESET} ")
             game = True
 
     elif chosen_planet.survival_chance / 2 < random.randint(0, 100) < chosen_planet.survival_chance:
         print("\nYou survived the mission :) ")
         print(
-            f"You received {chosen_planet.exp_gain:.1f} experience and {chosen_planet.metals:.1f} metals. ")
+            f" {BOLD} You received {chosen_planet.exp_gain:.1f} experience and {chosen_planet.metals:.1f} metals. {RESET}")
         ship.exp += chosen_planet.exp_gain
         ship.metals += chosen_planet.metals
         game = True
@@ -186,7 +217,7 @@ def planet_interaction(ship, chosen_planet, secret_coords, found_coords):
         print(
             f"\nThis mission went amazigly :) so you received {chosen_planet.exp_gain:.1f} experience and {chosen_planet.metals:.1f} metals")
         print(
-            f"You even found some ruins to get an additional {bonus*100:.1f}% rewards: ")
+            f"{BOLD}{GREEN}You even found some ruins to get an additional {bonus*100:.1f}% rewards: {RESET}")
 
         ship.exp += (1 + bonus) * chosen_planet.exp_gain
         ship.metals += (1 + bonus) * chosen_planet.metals
@@ -196,18 +227,19 @@ def planet_interaction(ship, chosen_planet, secret_coords, found_coords):
     if game and chosen_planet.secret:
         found_coords.append(chosen_planet.secret)
         print(
-            f"\n★ SECRET DISCOVERED! You recovered coordinate piece: {chosen_planet.secret}")
-        print(f"Progress: {' - '.join(found_coords)} ({len(found_coords)}/3)")
+            f"\n {YELLOW} ★ SECRET DISCOVERED! You recovered coordinate piece: {chosen_planet.secret} {RESET}")
+        print(
+            f" {YELLOW} Progress: {' - '.join(found_coords)} ({len(found_coords)}/3) {RESET}")
 
         if len(found_coords) == 3:
             time.sleep(2)
             print("\n==================================================")
-            print("★ SECRET ENDING UNLOCKED! ★")
+            print(f" {BOLD}{YELLOW}★ SECRET ENDING UNLOCKED! ★ {RESET}")
             print(
                 f"With coordinates {' - '.join(found_coords)} aligned, you open an ancient wormhole...")
             print(
                 "Your ship arrives back at Earth and you dont have to die :D")
-            print("YOU WIN THE GAME!")
+            print(f"{BOLD}{GREEN}YOU WIN THE GAME!{BOLD}{RESET}")
             print("==================================================")
             game = False
 
@@ -223,9 +255,12 @@ if __name__ == "__main__":
 
     initial_explanation(my_ship)
     game = True
+    trips = 0
     while game == True:
-        chosen_planet = generate_planets(my_ship, secret_coords, found_coords)
+        trips += 1
+        chosen_planet = generate_planets(
+            my_ship, secret_coords, found_coords, trips)
         game = planet_interaction(
-            my_ship, chosen_planet, secret_coords, found_coords)
+            my_ship, chosen_planet, found_coords, trips)
         if game == True:
             my_ship.upgrading_ship()
