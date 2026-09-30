@@ -4,3 +4,5 @@ Dylan,2.0,5
 Dylan,3.0,8
 Dylan,4.0,9
 Dylan_win,9.0,12
+Lily_win,6.0,6
+Dylan,7.0,11
