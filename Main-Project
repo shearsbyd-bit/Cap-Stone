@@ -87,7 +87,7 @@ class Ship:
         return self
 
 
-def leaderboard(ship, trips, filename="leaderboard.txt", top_n=5):
+def leaderboard(ship, trips, result, filename="leaderboard.txt", top_n=5):
     level = ship.exp // 100
     player_name = input("\nEnter your name for the leaderboard: ").strip()
 
@@ -99,9 +99,14 @@ def leaderboard(ship, trips, filename="leaderboard.txt", top_n=5):
         with open(filename, "r") as f:
             for line in f:
                 if "," in line:
-                    name, level_past, trips_past = line.strip().split(",", 2)
-                    entries.append(
-                        (name, float(level_past), float(trips_past)))
+                    if result == True:
+                        name, level_past, trips_past = line.strip().split(",", 2)
+                        entries.append((f"{name}_win", float(
+                            level_past), float(trips_past)))
+                    else:
+                        name, level_past, trips_past = line.strip().split(",", 2)
+                        entries.append((name, float(
+                            level_past), float(trips_past)))
     except FileNotFoundError:
         print("Error: Could not read leaderboard file.")
         return
@@ -123,6 +128,10 @@ def leaderboard(ship, trips, filename="leaderboard.txt", top_n=5):
 
 
 def initial_explanation(ship):
+    '''
+    Just a nice block to text to explain the game, with a bit of story
+    along with explaining what each part of the ship does.
+    '''
 
     CYAN = "\033[96m"
     YELLOW = "\033[93m"
@@ -143,7 +152,7 @@ def initial_explanation(ship):
         f"  \n {BOLD}{MAGENTA}----------------- SHIP UPGRADE OVERVIEW -----------------{RESET}\n")
 
     print(
-        f"  {BOLD}• OVERALL LEVEL [{GREEN}{ship.exp // 100}{RESET}{BOLD}]:{RESET} Overall ship progress.")
+        f"  {BOLD}• OVERALL LEVEL [{GREEN}{ship.exp // 100}{RESET}{BOLD}]:{RESET} Overall ship progress.\n")
 
     print(
         f"  {BOLD}• THRUSTERS [Level {BLUE}{ship.speed}{RESET}{BOLD}]:{RESET} Increases speed. Higher speed")
@@ -239,6 +248,7 @@ def planet_interaction(ship, chosen_planet, found_coords, trips):
     RED = "\033[91m"
     BOLD = "\033[1m"
     RESET = "\033[0m"
+    result = False
 
     time.sleep(2)
     level = ship.exp // 100
@@ -297,8 +307,9 @@ def planet_interaction(ship, chosen_planet, found_coords, trips):
             print(f"{BOLD}{GREEN}YOU WIN THE GAME!{BOLD}{RESET}")
             print("=========================================================")
             game = False
+            result = True
 
-    return game
+    return game, result
 
 
 if __name__ == "__main__":
@@ -314,9 +325,9 @@ if __name__ == "__main__":
         trips += 1
         chosen_planet = generate_planets(
             my_ship, secret_coords, found_coords, trips)
-        game = planet_interaction(
+        game, result = planet_interaction(
             my_ship, chosen_planet, found_coords, trips)
         if game == True:
             my_ship.upgrading_ship()
 
-    leaderboard(my_ship, trips, filename="leaderboard.txt", top_n=5)
+    leaderboard(my_ship, trips, result, filename="leaderboard.txt", top_n=5)
